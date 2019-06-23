@@ -1,0 +1,10 @@
+{
+  "name": "crossorigin.me",
+  "description": "Long live CORS proxies!",
+  "keywords": [
+    "cors",
+    "proxy",
+    "server",
+    "heroku"
+  ]
+}
