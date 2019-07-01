@@ -1,7 +1,7 @@
 {
-  "name": "crossorigin.me",
+  "name": "cors-streaming-proxy",
   "version": "2.0.0",
-  "description": "A CORS proxy for everyone",
+  "description": "A CORS proxy for everyone, based on crossorigin.me",
   "main": "index.js",
   "scripts": {
     "test": "npm run lint && npm run unit",
@@ -10,30 +10,22 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/technoboy10/crossorigin.me.git"
-  },
   "keywords": [
-    "cors"
+    "cors",
+    "proxy"
   ],
-  "author": "Connor Hudson",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/technoboy10/crossorigin.me/issues"
-  },
-  "homepage": "https://crossorigin.me",
   "devDependencies": {
     "eslint": "3.18.0",
     "eslint-plugin-mocha": "4.11.0",
     "mocha": "3.1.2",
     "nodemon": "^1.19.1",
+    "open": "^6.4.0",
     "supertest": "2.0.1"
   },
   "dependencies": {
     "request": "2.81.0",
     "restify": "4.3.0",
-    "restify-router": "0.2.1",
-    "toobusy-js": "^0.5.1"
+    "restify-router": "0.2.1"
   }
 }

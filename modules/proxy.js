@@ -1,24 +1,20 @@
 const request = require('request')
 
-const blockedPhrases = new RegExp(/porn|sexy/) // No thank you.
-
-let requireHeader = [
-  /*
-    'origin',
-    'x-requested-with',*/
-]
-
 let clientHeadersBlacklist = new Set(['host', 'cookie'])
 let serverHeadersBlacklist = new Set(['set-cookie', 'connection'])
+let requiredHeaders = [
+  'x-access-key'
+]
 
 // 2GB = 2147483648
-var sizeLimit = 2147483648
+const sizeLimit = 2147483648
 
 /*
 get handler handles standard GET reqs as well as streams
 */
 const proxy = method => (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*') // Actually do the CORS thing! :)
+  // Actually do the CORS thing! :)
+  res.header('Access-Control-Allow-Origin', '*')
 
   let url
   switch (method) {
@@ -29,14 +25,22 @@ const proxy = method => (req, res, next) => {
       url = req.params[0]
       break
   }
-  console.log(url)
 
   /*
-  // require Origin header
-  if (!requireHeader.some(header => req.headers[header])) {
-    res.statusCode = 403;
-    return res.end('Origin: header is required');
-  }*/
+  // require `X-Access-Key` header
+  if (!requiredHeaders.some(header => req.headers[header])) {
+    res.statusCode = 403
+    return res.end(`[${res.statusCode}] Proxy server is missing a required header.`)
+  }
+
+  // @ TODO: FIX
+  req.headers['x-access-key'] = process.env.PROXY_ACCESS_KEY
+  // Check `x-access-key`
+  if (req.headers['x-access-key'] !== process.env.PROXY_ACCESS_KEY) {
+    res.statusCode = 401
+    return res.end(`[${res.statusCode}] Proxy server faiiled validate header 'x-access-key.`)
+  }
+  */
 
   // TODO redirect same origin
   /* from cors-anywhere: boolean redirectSameOrigin - If true, requests to
@@ -46,34 +50,28 @@ const proxy = method => (req, res, next) => {
    * always succeed, even without proxying). */
 
   // forward client headers to server
-  var headers = {}
+  const headers = {}
   for (var header in req.headers) {
     if (!clientHeadersBlacklist.has(header.toLowerCase())) {
       headers[header] = req.headers[header]
     }
   }
-  var forwardedFor = req.headers['X-Fowarded-For']
+  const forwardedFor = req.headers['X-Fowarded-For']
   headers['X-Fowarded-For'] =
     (forwardedFor ? forwardedFor + ',' : '') + req.connection.remoteAddress
 
-  var data = 0 // This variable contains the size of the data (for limiting file size)
+  let data = 0 // This variable contains the size of the data (for limiting file size)
   request(url, { method, headers }) // request the document that the user specified
     .on('response', page => {
       // Check content length - if it's larger than the size limit, end the request with a 413 error.
       if (Number(page.headers['content-length']) > sizeLimit) {
         res.statusCode = 413
-        res.end('ERROR 413: Maximum allowed size is ' + sizeLimit + ' bytes.')
+        res.end(`[413]: Maximum allowed size is ${sizeLimit} bytes.`)
       }
       res.statusCode = page.statusCode
 
-      // if the page already supports cors, redirect to the URL directly
-      if (page.headers['access-control-allow-origin'] === '*') {
-        // TODO is this best?
-        // res.redirect(url, next)
-      }
-
       // include only desired headers
-      for (var header in page.headers) {
+      for (let header in page.headers) {
         if (!serverHeadersBlacklist.has(header)) {
           console.log(header, page.headers[header])
           res.header(header, page.headers[header])
@@ -81,7 +79,6 @@ const proxy = method => (req, res, next) => {
       }
       // must flush here -- otherwise pipe() will include the headers anyway!
       res.flushHeaders()
-      // req.pipe(page)
     })
     .on('data', chunk => {
       data += chunk.length
@@ -93,6 +90,7 @@ const proxy = method => (req, res, next) => {
       res.end() // End the response when the stream ends
     })
     .pipe(res) // Stream requested url to response
+
   next()
 }
 
@@ -102,13 +100,17 @@ opts handler allows us to use our own CORS preflight settings
 const opts = (req, res, next) => {
   // Couple of lines taken from http://stackoverflow.com/questions/14338683
   res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET') // Only allow GET for now
+  // Only allow GET for now
+  res.header('Access-Control-Allow-Methods', 'GET')
   res.header(
     'Access-Control-Allow-Headers',
     req.header('Access-Control-Request-Headers')
   )
-  res.header('Access-Control-Max-Age', '86400') // Cache preflight for 24 hrs if supported
+  // Cache preflight for 24 hrs if supported
+  res.header('Access-Control-Max-Age', '86400')
+
   res.send(200)
+
   next()
 }
 
