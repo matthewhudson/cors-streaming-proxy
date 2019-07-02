@@ -1,7 +1,7 @@
 {
   "name": "cors-streaming-proxy",
   "version": "2.0.0",
-  "description": "A CORS proxy for everyone, based on crossorigin.me",
+  "description": "A CORS proxy for everyone, adapted from crossorigin.me",
   "main": "index.js",
   "scripts": {
     "test": "npm run lint && npm run unit",
