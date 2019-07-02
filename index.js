@@ -1,4 +1,3 @@
-const open = require('open')
 const server = require('./modules/server')
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -11,6 +10,7 @@ server.listen(port, async () => {
   console.log(`Server listening at ${host}`)
 
   if (!isProd) {
+    const open = require('open')
     await open(host, { app: ['google chrome'] })
   }
 })
