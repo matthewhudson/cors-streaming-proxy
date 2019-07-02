@@ -7,6 +7,8 @@
 
 > Barebones CORS proxy w/ HTTPS & streaming support. Adapted from [corsproxy.github.io](https://corsproxy.github.io)
 
+> Note: Lint setup is very shaky, and seems to be fighting againist itself. Needs some love!
+
 ## Getting Started
 
 - [Installation](#installation)
